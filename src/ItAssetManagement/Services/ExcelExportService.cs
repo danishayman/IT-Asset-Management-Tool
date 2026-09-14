@@ -57,6 +57,41 @@ public class ExcelExportService : IExcelExportService
         return stream.ToArray();
     }
 
+    public byte[] BuildUserWorkbook(IReadOnlyList<UserListItemViewModel> users)
+    {
+        using var workbook = new XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Users");
+
+        string[] headers = ["Username", "Full name", "Role", "Status", "Assets held", "Created"];
+
+        for (var column = 0; column < headers.Length; column++)
+        {
+            sheet.Cell(1, column + 1).Value = headers[column];
+        }
+
+        for (var i = 0; i < users.Count; i++)
+        {
+            var user = users[i];
+            var row = i + 2;
+
+            sheet.Cell(row, 1).Value = user.Username;
+            sheet.Cell(row, 2).Value = user.FullName;
+            sheet.Cell(row, 3).Value = user.Role;
+            sheet.Cell(row, 4).Value = user.IsActive ? "Active" : "Deactivated";
+            sheet.Cell(row, 5).Value = user.AssignedAssetCount;
+
+            // No password material of any kind reaches the export, hashes included.
+            sheet.Cell(row, 6).Value = user.CreatedAt.ToLocalTime();
+            sheet.Cell(row, 6).Style.DateFormat.Format = "yyyy-mm-dd hh:mm";
+        }
+
+        StyleSheet(sheet, headers.Length, users.Count);
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        return stream.ToArray();
+    }
+
     public string BuildFileName(string prefix) => $"{prefix}_{DateTime.Now:yyyy-MM-dd}.xlsx";
 
     private static void StyleSheet(IXLWorksheet sheet, int columnCount, int dataRowCount)

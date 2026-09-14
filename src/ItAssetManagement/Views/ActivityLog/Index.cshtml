@@ -1,0 +1,111 @@
+@model ActivityLogViewModel
+@{
+    ViewData["Title"] = "Activity log";
+    var results = Model.Results;
+}
+
+<div class="mb-3">
+    <h1 class="h4 mb-0">Activity log</h1>
+    <span class="text-secondary small">
+        @if (results.TotalCount == 0)
+        {
+            <text>No activity matches your filters.</text>
+        }
+        else
+        {
+            <text>Showing @results.FirstItemOnPage&ndash;@results.LastItemOnPage of @results.TotalCount</text>
+        }
+    </span>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-3">
+        <form asp-action="Index" method="get" class="row g-2 align-items-end">
+            <div class="col-12 col-md-6">
+                <label asp-for="Filter.AssetId" class="form-label small mb-1">Asset</label>
+                <select asp-for="Filter.AssetId" class="form-select" asp-items="@Model.AssetOptions">
+                    <option value="">All assets</option>
+                </select>
+            </div>
+
+            <div class="col-8 col-md-4">
+                <label asp-for="Filter.Action" class="form-label small mb-1">Action</label>
+                <select asp-for="Filter.Action" class="form-select"
+                        asp-items="@Html.GetEnumSelectList<ActivityAction>()">
+                    <option value="">All actions</option>
+                </select>
+            </div>
+
+            <div class="col-4 col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-secondary">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+
+            @if (Model.Filter.HasAnyFilter)
+            {
+                <div class="col-12">
+                    <a asp-action="Index" class="small text-decoration-none">
+                        <i class="bi bi-x-circle me-1"></i>Clear filters
+                    </a>
+                </div>
+            }
+        </form>
+    </div>
+</div>
+
+@if (results.TotalCount == 0)
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5 text-secondary">
+            <i class="bi bi-clock-history display-6 d-block mb-2"></i>
+            Nothing recorded for these filters.
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">When</th>
+                        <th scope="col">Action</th>
+                        <th scope="col">Asset</th>
+                        <th scope="col">Details</th>
+                        <th scope="col">By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in results.Items)
+                    {
+                        <tr>
+                            <td class="text-nowrap text-secondary small">
+                                @entry.Timestamp.ToLocalTime().ToString("d MMM yyyy HH:mm")
+                            </td>
+                            <td><span class="badge text-bg-light border">@entry.Action</span></td>
+                            <td class="text-nowrap-id">
+                                @if (entry.AssetId is null)
+                                {
+                                    @* The asset is gone but its history is not: AssetId was set to
+                                       null on delete rather than cascading the audit rows away. *@
+                                    <span class="text-secondary fst-italic" title="This asset has been deleted">deleted</span>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Assets" asp-action="Details" asp-route-id="@entry.AssetId"
+                                       class="text-decoration-none">@entry.AssetTag</a>
+                                }
+                            </td>
+                            <td class="small">@entry.Details</td>
+                            <td class="text-nowrap small">@entry.PerformedByFullName</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <partial name="_Pager" model="@(new PagerViewModel(results.Page, results.TotalPages, Model.Filter.ToRouteValues()))" />
+}

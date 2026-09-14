@@ -21,7 +21,7 @@ public class AssetsController(
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     [HttpGet]
-    public async Task<IActionResult> Index(AssetFilterViewModel filter, CancellationToken ct)
+    public async Task<IActionResult> Index([FromQuery] AssetFilterViewModel filter, CancellationToken ct)
     {
         var model = new AssetListViewModel
         {
@@ -193,7 +193,7 @@ public class AssetsController(
     /// Index, so the export cannot drift out of step with what the user is looking at.
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> Export(AssetFilterViewModel filter, CancellationToken ct)
+    public async Task<IActionResult> Export([FromQuery] AssetFilterViewModel filter, CancellationToken ct)
     {
         var assets = await assetService.GetAllMatchingAsync(filter, ct);
         var workbook = excelExport.BuildAssetWorkbook(assets);

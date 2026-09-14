@@ -1,0 +1,121 @@
+@model UserListViewModel
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div>
+        <h1 class="h4 mb-0">Users</h1>
+        <span class="text-secondary small">@Model.Users.Count accounts</span>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-success" asp-action="Export">
+            <i class="bi bi-file-earmark-excel me-1"></i> Export to Excel
+        </a>
+        <a class="btn btn-primary" asp-action="Create">
+            <i class="bi bi-person-plus me-1"></i> New user
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Username</th>
+                    <th scope="col">Full name</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Assets held</th>
+                    <th scope="col" class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.Users)
+                {
+                    var isSelf = user.Id == Model.CurrentUserId;
+                    <tr>
+                        <td class="text-nowrap-id fw-semibold">
+                            @user.Username
+                            @if (isSelf)
+                            {
+                                <span class="badge text-bg-light border ms-1">you</span>
+                            }
+                        </td>
+                        <td>@user.FullName</td>
+                        <td>
+                            <span class="badge @(user.IsAdmin ? "text-bg-dark" : "text-bg-light border")">@user.Role</span>
+                        </td>
+                        <td>
+                            @if (user.IsActive)
+                            {
+                                <span class="badge text-bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-secondary">Deactivated</span>
+                            }
+                        </td>
+                        <td>@user.AssignedAssetCount</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@user.Id"
+                               title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            @* Self-destructive actions are not offered at all for your own
+                               account. The service refuses them too, so hiding the button is
+                               a courtesy rather than the control. *@
+                            @if (!isSelf)
+                            {
+                                <form asp-action="SetActive" asp-route-id="@user.Id" method="post" class="d-inline">
+                                    <input type="hidden" name="isActive" value="@((!user.IsActive).ToString().ToLowerInvariant())" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                            title="@(user.IsActive ? "Deactivate" : "Reactivate")">
+                                        <i class="bi @(user.IsActive ? "bi-person-slash" : "bi-person-check")"></i>
+                                    </button>
+                                </form>
+
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal" data-bs-target="#deleteUser@(user.Id)" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@foreach (var user in Model.Users.Where(u => u.Id != Model.CurrentUserId))
+{
+    <div class="modal fade" id="deleteUser@(user.Id)" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete this user?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2"><strong>@user.FullName</strong> (@user.Username)</p>
+                    <p class="text-secondary small mb-0">
+                        An account with activity history cannot be deleted, because an audit row
+                        with no author is worthless. Deactivate it instead to block sign-in while
+                        keeping the trail intact.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form asp-action="Delete" asp-route-id="@user.Id" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i> Delete user
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,22 @@
+@model UserFormViewModel
+@{
+    ViewData["Title"] = "New user";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a asp-action="Index">Users</a></li>
+        <li class="breadcrumb-item active" aria-current="page">New</li>
+    </ol>
+</nav>
+
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <h1 class="h5 mb-4">New user</h1>
+        <partial name="_Form" model="Model" />
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

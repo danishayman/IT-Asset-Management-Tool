@@ -7,6 +7,9 @@ public interface IExcelExportService
     /// <summary>Renders the supplied assets as a styled .xlsx workbook.</summary>
     byte[] BuildAssetWorkbook(IReadOnlyList<AssetListItemViewModel> assets);
 
+    /// <summary>Renders the supplied users as a styled .xlsx workbook.</summary>
+    byte[] BuildUserWorkbook(IReadOnlyList<UserListItemViewModel> users);
+
     /// <summary>A filename carrying a date stamp, so repeated exports do not collide in a downloads folder.</summary>
     string BuildFileName(string prefix);
 }

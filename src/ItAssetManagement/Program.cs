@@ -32,6 +32,7 @@ try
     builder.Services.AddScoped<IAssetService, AssetService>();
     builder.Services.AddSingleton<IExcelExportService, ExcelExportService>();
     builder.Services.AddScoped<IDashboardService, DashboardService>();
+    builder.Services.AddScoped<IUserService, UserService>();
 
     builder.Services
         .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

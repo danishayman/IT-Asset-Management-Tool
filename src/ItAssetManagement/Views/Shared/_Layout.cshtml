@@ -37,6 +37,23 @@
                                     <i class="bi bi-pc-display me-1"></i> Assets
                                 </a>
                             </li>
+
+                            @* Admin-only links are not rendered for anyone else. The controllers
+                               carry [Authorize(Roles = Admin)] regardless, so this only removes
+                               dead ends from the UI rather than being the access control. *@
+                            @if (User.IsInRole(Roles.Admin))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Users" asp-action="Index">
+                                        <i class="bi bi-people me-1"></i> Users
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="ActivityLog" asp-action="Index">
+                                        <i class="bi bi-clock-history me-1"></i> Activity log
+                                    </a>
+                                </li>
+                            }
                         }
                     </ul>
 
