@@ -13,8 +13,13 @@ namespace ItAssetManagement.Controllers;
 /// turns the result into a view or a redirect.
 /// </summary>
 [Authorize]
-public class AssetsController(IAssetService assetService) : Controller
+public class AssetsController(
+    IAssetService assetService,
+    IExcelExportService excelExport) : Controller
 {
+    private const string ExcelContentType =
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
     [HttpGet]
     public async Task<IActionResult> Index(AssetFilterViewModel filter, CancellationToken ct)
     {
@@ -33,7 +38,18 @@ public class AssetsController(IAssetService assetService) : Controller
     {
         var model = await assetService.GetDetailsAsync(id, ct);
 
-        return model is null ? NotFound() : View(model);
+        if (model is null)
+        {
+            return NotFound();
+        }
+
+        // Only administrators can assign, so only they need the list of people to assign to.
+        if (User.IsAdmin())
+        {
+            model.AssignableUsers = await assetService.GetAssignableUserOptionsAsync(ct);
+        }
+
+        return View(model);
     }
 
     [HttpGet]
@@ -132,6 +148,57 @@ public class AssetsController(IAssetService assetService) : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [Authorize(Roles = Roles.Admin)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Assign(int id, int assignedToUserId, CancellationToken ct)
+    {
+        var result = await assetService.AssignAsync(id, assignedToUserId, User.GetUserId(), ct);
+
+        if (result.Succeeded)
+        {
+            this.Success("Asset assigned.");
+        }
+        else
+        {
+            this.Error(result.Error!);
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [Authorize(Roles = Roles.Admin)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Unassign(int id, CancellationToken ct)
+    {
+        var result = await assetService.UnassignAsync(id, User.GetUserId(), ct);
+
+        if (result.Succeeded)
+        {
+            this.Success("Asset returned to the available pool.");
+        }
+        else
+        {
+            this.Error(result.Error!);
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    /// <summary>
+    /// Exports whatever the list is currently showing. It binds the same filter type as
+    /// Index, so the export cannot drift out of step with what the user is looking at.
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> Export(AssetFilterViewModel filter, CancellationToken ct)
+    {
+        var assets = await assetService.GetAllMatchingAsync(filter, ct);
+        var workbook = excelExport.BuildAssetWorkbook(assets);
+
+        return File(workbook, ExcelContentType, excelExport.BuildFileName("Assets"));
     }
 
     private async Task PopulateOptionsAsync(AssetFormViewModel model, CancellationToken ct)

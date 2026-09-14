@@ -79,6 +79,9 @@ public class AssetDetailsViewModel
     public bool IsUnderWarranty => WarrantyExpiry >= DateOnly.FromDateTime(DateTime.UtcNow);
 
     public IReadOnlyList<ActivityLogItemViewModel> RecentActivity { get; set; } = [];
+
+    /// <summary>Populated for administrators only, to back the assignment dropdown.</summary>
+    public IReadOnlyList<SelectListItem> AssignableUsers { get; set; } = [];
 }
 
 /// <summary>Backs both Create and Edit. Id is 0 when creating.</summary>

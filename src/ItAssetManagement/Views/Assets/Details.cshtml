@@ -90,7 +90,48 @@
     </div>
 
     <div class="col-lg-5">
-        <div class="card shadow-sm h-100">
+        @if (isAdmin)
+        {
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h2 class="h6 text-secondary text-uppercase small mb-3">Assignment</h2>
+
+                    @if (Model.AssignedToUserId is null)
+                    {
+                        <form asp-action="Assign" asp-route-id="@Model.Id" method="post" class="row g-2">
+                            <div class="col-12 col-sm-7">
+                                <select name="assignedToUserId" class="form-select" required
+                                        asp-items="@Model.AssignableUsers">
+                                    <option value="">Choose a person</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-5 d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-person-check me-1"></i> Assign
+                                </button>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-text">Assigning sets the status to In use.</div>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="mb-3">
+                            Currently held by <strong>@Model.AssignedToFullName</strong>.
+                        </p>
+                        <form asp-action="Unassign" asp-route-id="@Model.Id" method="post">
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i class="bi bi-person-dash me-1"></i> Return to pool
+                            </button>
+                            <div class="form-text">Returning sets the status back to Available.</div>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="card shadow-sm">
             <div class="card-body">
                 <h2 class="h6 text-secondary text-uppercase small mb-3">Recent activity</h2>
 

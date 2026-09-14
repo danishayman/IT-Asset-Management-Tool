@@ -21,12 +21,20 @@
         </span>
     </div>
 
-    @if (isAdmin)
-    {
-        <a class="btn btn-primary" asp-action="Create">
-            <i class="bi bi-plus-lg me-1"></i> New asset
+    <div class="d-flex gap-2">
+        @* Carries the current filter, so the download matches what is on screen. *@
+        <a class="btn btn-outline-success" asp-action="Export"
+           asp-all-route-data="Model.Filter.ToRouteValues()">
+            <i class="bi bi-file-earmark-excel me-1"></i> Export to Excel
         </a>
-    }
+
+        @if (isAdmin)
+        {
+            <a class="btn btn-primary" asp-action="Create">
+                <i class="bi bi-plus-lg me-1"></i> New asset
+            </a>
+        }
+    </div>
 </div>
 
 <div class="card shadow-sm mb-3">
