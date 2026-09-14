@@ -1,0 +1,33 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+
+# Serilog rolling files
+logs/
+
+# Local configuration overrides and secrets — never commit these
+appsettings.*.local.json
+appsettings.Production.json
+.env
+*.pfx
+*.snk
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+*.swp
+
+# Test / coverage output
+TestResults/
+coverage/
+
+# OS noise
+.DS_Store
+Thumbs.db

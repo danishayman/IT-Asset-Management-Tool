@@ -1,0 +1,17 @@
+/* Small additions on top of Bootstrap. Anything Bootstrap already does is left to it. */
+
+html {
+    font-size: 15px;
+}
+
+.table-sticky thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* Keeps long serial numbers and asset tags from wrapping mid-identifier. */
+.text-nowrap-id {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,28 @@
+# PostgreSQL 17 for local development.
+#
+# The password falls back to a throwaway development value so a reviewer can run
+# `docker compose up -d` with no prior setup. Override it for anything that is not
+# a local machine:  POSTGRES_PASSWORD=... docker compose up -d
+services:
+  db:
+    image: postgres:17
+    container_name: itam-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: itassetdb
+      POSTGRES_USER: itam
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-itam_dev_pw}
+    ports:
+      - "5432:5432"
+    volumes:
+      - itam-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Gates dependent services until Postgres can actually accept queries,
+      # not merely until the container process has started.
+      test: ["CMD-SHELL", "pg_isready -U itam -d itassetdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  itam-pgdata:
