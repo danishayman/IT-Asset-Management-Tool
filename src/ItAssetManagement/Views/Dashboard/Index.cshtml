@@ -1,0 +1,181 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h1 class="h4 mb-3">Dashboard</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-secondary small text-uppercase">Total assets</div>
+                <div class="display-6 fw-semibold">@Model.TotalAssets</div>
+                <div class="text-secondary small">RM @Model.TotalPurchaseValue.ToString("N2") at purchase</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-secondary small text-uppercase">Assigned</div>
+                <div class="display-6 fw-semibold text-primary">@Model.AssignedCount</div>
+                <div class="text-secondary small">@Model.AssignedPercentage% of the fleet</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-secondary small text-uppercase">Unassigned</div>
+                <div class="display-6 fw-semibold text-success">@Model.UnassignedCount</div>
+                <div class="text-secondary small">Idle, in repair or retired</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-secondary small text-uppercase">Needs repair</div>
+                <div class="display-6 fw-semibold text-warning">@Model.InRepairCount</div>
+                <div class="text-secondary small">
+                    <a asp-controller="Assets" asp-action="Index" asp-route-Status="@AssetStatus.Repair"
+                       class="text-decoration-none">View these assets</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6 text-secondary text-uppercase small mb-3">Status breakdown</h2>
+                <canvas id="statusChart" height="260" aria-label="Assets by status" role="img"></canvas>
+                <p id="statusEmpty" class="text-secondary small text-center mb-0 d-none">No data to chart yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h6 text-secondary text-uppercase small mb-3">Assets per category</h2>
+                <canvas id="categoryChart" height="260" aria-label="Assets per category" role="img"></canvas>
+                <p id="categoryEmpty" class="text-secondary small text-center mb-0 d-none">No data to chart yet.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-shield-exclamation fs-2 text-secondary"></i>
+                <div>
+                    <div class="fw-semibold">@Model.OutOfWarrantyCount out of warranty</div>
+                    <div class="text-secondary small">Candidates for replacement budgeting.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-life-preserver fs-2 text-secondary"></i>
+                <div>
+                    <div class="fw-semibold">@Model.OpenTicketCount open tickets</div>
+                    <div class="text-secondary small">Not yet closed.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+        // Both charts are fed from the JSON endpoints rather than values rendered into this
+        // page, so what is drawn always reflects the current database.
+        (function () {
+            var statusUrl = '@Url.Action("StatusBreakdown", "Dashboard")';
+            var categoryUrl = '@Url.Action("CategoryBreakdown", "Dashboard")';
+
+            // Fixed, status-ordered palette so a slice keeps its colour between visits:
+            // In use, Available, Repair, Retired.
+            var statusColours = ['#0d6efd', '#198754', '#ffc107', '#6c757d'];
+
+            function load(url) {
+                return fetch(url, { headers: { 'Accept': 'application/json' } })
+                    .then(function (response) {
+                        if (!response.ok) { throw new Error('Request failed: ' + response.status); }
+                        return response.json();
+                    });
+            }
+
+            function showEmpty(canvasId, messageId) {
+                document.getElementById(canvasId).classList.add('d-none');
+                document.getElementById(messageId).classList.remove('d-none');
+            }
+
+            load(statusUrl).then(function (points) {
+                if (!points.length || points.every(function (p) { return p.value === 0; })) {
+                    showEmpty('statusChart', 'statusEmpty');
+                    return;
+                }
+
+                new Chart(document.getElementById('statusChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: points.map(function (p) { return p.label; }),
+                        datasets: [{
+                            data: points.map(function (p) { return p.value; }),
+                            backgroundColor: statusColours,
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }).catch(function () { showEmpty('statusChart', 'statusEmpty'); });
+
+            load(categoryUrl).then(function (points) {
+                if (!points.length) {
+                    showEmpty('categoryChart', 'categoryEmpty');
+                    return;
+                }
+
+                new Chart(document.getElementById('categoryChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: points.map(function (p) { return p.label; }),
+                        datasets: [{
+                            label: 'Assets',
+                            data: points.map(function (p) { return p.value; }),
+                            backgroundColor: '#0d6efd'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            // Counts are whole numbers, so half-asset gridlines are noise.
+                            y: { beginAtZero: true, ticks: { precision: 0 } }
+                        }
+                    }
+                });
+            }).catch(function () { showEmpty('categoryChart', 'categoryEmpty'); });
+        })();
+    </script>
+}

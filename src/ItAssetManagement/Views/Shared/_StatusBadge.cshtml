@@ -1,13 +1,13 @@
 @model AssetStatus
 @{
     // Colour carries meaning here, so each badge also spells the status out in text.
-    var (css, label) = Model switch
+    var css = Model switch
     {
-        AssetStatus.InUse     => ("text-bg-primary", "In use"),
-        AssetStatus.Available => ("text-bg-success", "Available"),
-        AssetStatus.Repair    => ("text-bg-warning", "Repair"),
-        AssetStatus.Retired   => ("text-bg-secondary", "Retired"),
-        _                     => ("text-bg-light", Model.ToString())
+        AssetStatus.InUse     => "text-bg-primary",
+        AssetStatus.Available => "text-bg-success",
+        AssetStatus.Repair    => "text-bg-warning",
+        AssetStatus.Retired   => "text-bg-secondary",
+        _                     => "text-bg-light"
     };
 }
-<span class="badge @css">@label</span>
+<span class="badge @css">@Model.ToDisplayName()</span>

@@ -1,4 +1,5 @@
 using ClosedXML.Excel;
+using ItAssetManagement.Domain;
 using ItAssetManagement.ViewModels;
 
 namespace ItAssetManagement.Services;
@@ -36,7 +37,7 @@ public class ExcelExportService : IExcelExportService
             sheet.Cell(row, 2).Value = asset.Name;
             sheet.Cell(row, 3).Value = asset.CategoryName;
             sheet.Cell(row, 4).Value = asset.SerialNumber;
-            sheet.Cell(row, 5).Value = FormatStatus(asset.Status);
+            sheet.Cell(row, 5).Value = asset.Status.ToDisplayName();
 
             // Blank rather than a dash: the column reads as empty to a filter or pivot,
             // which is what an unassigned asset actually means.
@@ -85,17 +86,4 @@ public class ExcelExportService : IExcelExportService
             column.Width = Math.Clamp(column.Width, 10, 40);
         }
     }
-
-    /// <summary>
-    /// Spells the enum the way the UI does. "InUse" in a spreadsheet handed to someone
-    /// outside IT is needless jargon.
-    /// </summary>
-    private static string FormatStatus(Domain.AssetStatus status) => status switch
-    {
-        Domain.AssetStatus.InUse => "In use",
-        Domain.AssetStatus.Available => "Available",
-        Domain.AssetStatus.Repair => "Repair",
-        Domain.AssetStatus.Retired => "Retired",
-        _ => status.ToString()
-    };
 }
