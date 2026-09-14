@@ -1,0 +1,23 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Something went wrong";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-4 text-center">
+                <i class="bi bi-exclamation-octagon display-5 text-danger"></i>
+                <h1 class="h4 mt-3">Something went wrong</h1>
+                <p class="text-secondary">
+                    The error has been logged. Nothing you were working on has been lost unless
+                    the page said otherwise.
+                </p>
+                <a class="btn btn-outline-secondary mb-3" asp-controller="Home" asp-action="Index">
+                    Back to home
+                </a>
+                <partial name="_CorrelationId" model="Model" />
+            </div>
+        </div>
+    </div>
+</div>

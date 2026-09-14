@@ -40,7 +40,7 @@ try
         {
             options.LoginPath = "/Account/Login";
             options.LogoutPath = "/Account/Logout";
-            options.AccessDeniedPath = "/Account/AccessDenied";
+            options.AccessDeniedPath = "/Error/403";
             options.ExpireTimeSpan = TimeSpan.FromHours(8);
             options.SlidingExpiration = true;
             options.Cookie.HttpOnly = true;
@@ -62,9 +62,19 @@ try
 
     await app.MigrateAndSeedAsync();
 
-    if (!app.Environment.IsDevelopment())
+    // First in the pipeline so that everything downstream, the error pages included, can
+    // report the same correlation id that the log lines carry.
+    app.UseCorrelationId();
+
+    if (app.Environment.IsDevelopment())
     {
-        app.UseExceptionHandler("/Home/Error");
+        // The developer page is the reason a bug can look different locally: it shows the
+        // real stack trace, where every other environment shows the friendly page instead.
+        app.UseDeveloperExceptionPage();
+    }
+    else
+    {
+        app.UseExceptionHandler("/Error");
 
         // HTTPS enforcement is deliberately production-only. Locally the app serves plain
         // HTTP on a fixed port so a reviewer does not have to trust a dev certificate first.
@@ -72,8 +82,20 @@ try
         app.UseHttpsRedirection();
     }
 
+    // Catches the responses that never threw: a 404 for an unknown route, and the 403 that
+    // authorisation produces. Re-executing preserves the original status code.
+    app.UseStatusCodePagesWithReExecute("/Error/{0}");
+
     app.UseStaticFiles();
-    app.UseSerilogRequestLogging();
+
+    app.UseSerilogRequestLogging(options =>
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
+            // Puts the caller on the single request-completed line, so the log is readable
+            // without cross-referencing every entry against the correlation id.
+            diagnosticContext.Set("CorrelationId", httpContext.GetCorrelationId());
+            diagnosticContext.Set("User", httpContext.User.Identity?.Name ?? "anonymous");
+        });
 
     app.UseRouting();
 

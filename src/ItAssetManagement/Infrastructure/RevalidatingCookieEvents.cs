@@ -2,6 +2,7 @@ using System.Security.Claims;
 using ItAssetManagement.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 
 namespace ItAssetManagement.Infrastructure;
 
@@ -34,6 +35,19 @@ public class RevalidatingCookieEvents(
         {
             await RejectAsync(context, $"user {userId} is deactivated or no longer exists");
         }
+    }
+
+    /// <summary>
+    /// Returns a real 403 instead of the cookie handler's default redirect to a page that
+    /// then answers 200. The status code is what an API client, a crawler or a log reader
+    /// actually goes on, and a signed-in user being redirected to "sign in" is misleading
+    /// anyway: their problem is their role, not their session. UseStatusCodePagesWithReExecute
+    /// still renders the friendly Access denied page over the top of it.
+    /// </summary>
+    public override Task RedirectToAccessDenied(RedirectContext<CookieAuthenticationOptions> context)
+    {
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
     }
 
     private async Task RejectAsync(CookieValidatePrincipalContext context, string reason)

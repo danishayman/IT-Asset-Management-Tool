@@ -71,10 +71,6 @@ public class AccountController(IAuthService authService, ILogger<AccountControll
         return RedirectToAction(nameof(Login));
     }
 
-    [HttpGet]
-    [AllowAnonymous]
-    public IActionResult AccessDenied() => View();
-
     /// <summary>
     /// Guards against an open redirect: a returnUrl arrives from the query string, so an
     /// attacker could otherwise use the login page to bounce a victim to another site.

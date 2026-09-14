@@ -1,0 +1,10 @@
+@model ErrorViewModel
+
+@if (Model.ShowCorrelationId)
+{
+    <p class="text-secondary small mb-0">
+        Reference
+        <code class="user-select-all">@Model.CorrelationId</code>
+        &mdash; quote this and it can be found in the server logs.
+    </p>
+}
