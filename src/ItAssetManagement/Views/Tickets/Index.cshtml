@@ -1,0 +1,119 @@
+@model TicketListViewModel
+@{
+    ViewData["Title"] = "Tickets";
+    var results = Model.Results;
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div>
+        <h1 class="h4 mb-0">Tickets</h1>
+        <span class="text-secondary small">
+            @(Model.ShowsAllUsers ? "All tickets" : "Tickets you have raised")
+            @if (results.TotalCount > 0)
+            {
+                <text>&middot; showing @results.FirstItemOnPage&ndash;@results.LastItemOnPage of @results.TotalCount</text>
+            }
+        </span>
+    </div>
+
+    <a class="btn btn-primary" asp-action="Create">
+        <i class="bi bi-plus-lg me-1"></i> Raise a ticket
+    </a>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-3">
+        <form asp-action="Index" method="get" class="row g-2 align-items-end">
+            <div class="col-8 col-md-4">
+                <label asp-for="Filter.Status" class="form-label small mb-1">Status</label>
+                <select asp-for="Filter.Status" class="form-select"
+                        asp-items="@Html.GetEnumSelectList<TicketStatus>()">
+                    <option value="">All statuses</option>
+                </select>
+            </div>
+            <div class="col-4 col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-secondary">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+            @if (Model.Filter.HasAnyFilter)
+            {
+                <div class="col-12">
+                    <a asp-action="Index" class="small text-decoration-none">
+                        <i class="bi bi-x-circle me-1"></i>Clear filter
+                    </a>
+                </div>
+            }
+        </form>
+    </div>
+</div>
+
+@if (results.TotalCount == 0)
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5 text-secondary">
+            <i class="bi bi-life-preserver display-6 d-block mb-2"></i>
+            No tickets here yet.
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Asset</th>
+                        @if (Model.ShowsAllUsers)
+                        {
+                            <th scope="col">Raised by</th>
+                        }
+                        <th scope="col">Raised</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ticket in results.Items)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@ticket.Id" class="text-decoration-none fw-semibold">
+                                    @ticket.Title
+                                </a>
+                            </td>
+                            <td class="text-nowrap"><partial name="_TicketBadges" model="ticket" /></td>
+                            <td class="text-nowrap-id">
+                                @if (ticket.AssetId is null)
+                                {
+                                    <span class="text-secondary">&mdash;</span>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Assets" asp-action="Details" asp-route-id="@ticket.AssetId"
+                                       class="text-decoration-none">@ticket.AssetTag</a>
+                                }
+                            </td>
+                            @if (Model.ShowsAllUsers)
+                            {
+                                <td class="small">@ticket.RaisedByFullName</td>
+                            }
+                            <td class="text-secondary small text-nowrap">
+                                @ticket.CreatedAt.ToLocalTime().ToString("d MMM yyyy")
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@ticket.Id">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <partial name="_Pager" model="@(new PagerViewModel(results.Page, results.TotalPages, Model.Filter.ToRouteValues()))" />
+}

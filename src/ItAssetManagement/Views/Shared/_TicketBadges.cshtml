@@ -1,0 +1,19 @@
+@model TicketListItemViewModel
+@{
+    var statusCss = Model.Status switch
+    {
+        TicketStatus.Open       => "text-bg-danger",
+        TicketStatus.InProgress => "text-bg-warning",
+        TicketStatus.Closed     => "text-bg-secondary",
+        _                       => "text-bg-light"
+    };
+    var priorityCss = Model.Priority switch
+    {
+        TicketPriority.Critical => "text-bg-danger",
+        TicketPriority.High     => "text-bg-warning",
+        TicketPriority.Medium   => "text-bg-info",
+        _                       => "text-bg-light border"
+    };
+}
+<span class="badge @statusCss">@Model.Status.ToDisplayName()</span>
+<span class="badge @priorityCss">@Model.Priority.ToDisplayName()</span>

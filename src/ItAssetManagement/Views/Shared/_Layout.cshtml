@@ -38,6 +38,12 @@
                                 </a>
                             </li>
 
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Tickets" asp-action="Index">
+                                    <i class="bi bi-life-preserver me-1"></i> Tickets
+                                </a>
+                            </li>
+
                             @* Admin-only links are not rendered for anyone else. The controllers
                                carry [Authorize(Roles = Admin)] regardless, so this only removes
                                dead ends from the UI rather than being the access control. *@
