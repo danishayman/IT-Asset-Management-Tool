@@ -1,19 +1,33 @@
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Home";
+    var fullName = User.FindFirst(AppClaimTypes.FullName)?.Value;
 }
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card shadow-sm">
             <div class="card-body p-4">
-                <h1 class="h3 mb-3">IT Asset Management</h1>
-                <p class="text-secondary mb-4">
-                    Track company hardware: who has what, what is broken, and what is idle.
-                </p>
-                <p class="mb-0">
-                    <span class="badge text-bg-secondary">Milestone 1</span>
-                    Schema, migrations and seed data are in place.
-                </p>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <h1 class="h3 mb-1">Welcome back, @fullName</h1>
+                    <p class="text-secondary mb-4">
+                        Track company hardware: who has what, what is broken, and what is idle.
+                    </p>
+                    <a class="btn btn-primary" asp-controller="Assets" asp-action="Index">
+                        <i class="bi bi-pc-display me-1"></i> Browse assets
+                    </a>
+                }
+                else
+                {
+                    <h1 class="h3 mb-1">IT Asset Management</h1>
+                    <p class="text-secondary mb-4">
+                        Track company hardware: who has what, what is broken, and what is idle.
+                    </p>
+                    <a class="btn btn-primary" asp-controller="Account" asp-action="Login">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign in to continue
+                    </a>
+                }
             </div>
         </div>
     </div>

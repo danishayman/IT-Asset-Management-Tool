@@ -1,0 +1,57 @@
+@model LoginViewModel
+@inject IWebHostEnvironment Environment
+@{
+    ViewData["Title"] = "Sign in";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-1">Sign in</h1>
+                <p class="text-secondary small mb-4">IT Asset Management</p>
+
+                <form asp-action="Login" method="post" novalidate>
+                    <input type="hidden" asp-for="ReturnUrl" />
+
+                    @* Failures that are not tied to one field, such as bad credentials. *@
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label"></label>
+                        <input asp-for="Username" class="form-control" autocomplete="username" autofocus />
+                        <span asp-validation-for="Username" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" autocomplete="current-password" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign in
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        @* Demo credentials are a convenience for whoever is reviewing this build, so they
+           are rendered only in Development and never reach a deployed environment. *@
+        @if (Environment.IsDevelopment())
+        {
+            <div class="card mt-3 border-0 bg-body-secondary">
+                <div class="card-body py-3 small text-secondary">
+                    <div class="fw-semibold mb-1">Demo accounts</div>
+                    <div><code>admin</code> / <code>Admin@@123</code> &mdash; Administrator</div>
+                    <div><code>jlim</code> / <code>User@@123</code> &mdash; Normal user</div>
+                    <div><code>schan</code> / <code>User@@123</code> &mdash; Normal user</div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
