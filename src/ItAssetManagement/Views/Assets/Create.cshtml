@@ -1,0 +1,22 @@
+@model AssetFormViewModel
+@{
+    ViewData["Title"] = "New asset";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a asp-action="Index">Assets</a></li>
+        <li class="breadcrumb-item active" aria-current="page">New</li>
+    </ol>
+</nav>
+
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <h1 class="h5 mb-4">New asset</h1>
+        <partial name="_Form" model="Model" />
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_FormScripts" />
+}

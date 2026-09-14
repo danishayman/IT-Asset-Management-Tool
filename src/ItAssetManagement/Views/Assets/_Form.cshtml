@@ -1,0 +1,91 @@
+@model AssetFormViewModel
+
+<form asp-action="@(Model.IsEdit ? "Edit" : "Create")" method="post" novalidate>
+    <input type="hidden" asp-for="Id" />
+
+    @* Carries the revision the form was rendered from, so a save that would overwrite
+       someone else's concurrent edit is refused instead of silently winning. *@
+    <input type="hidden" asp-for="RowVersion" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label asp-for="AssetTag" class="form-label"></label>
+            <input asp-for="AssetTag" class="form-control" placeholder="ITAM-0001" />
+            <span asp-validation-for="AssetTag" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-8">
+            <label asp-for="Name" class="form-label"></label>
+            <input asp-for="Name" class="form-control" placeholder="Dell Latitude 5540" />
+            <span asp-validation-for="Name" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="CategoryId" class="form-label"></label>
+            <select asp-for="CategoryId" class="form-select" asp-items="@Model.CategoryOptions">
+                <option value="">Choose a category</option>
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="SerialNumber" class="form-label"></label>
+            <input asp-for="SerialNumber" class="form-control" />
+            <span asp-validation-for="SerialNumber" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="Status" class="form-label"></label>
+            <select asp-for="Status" class="form-select" id="statusSelect"
+                    asp-items="@Html.GetEnumSelectList<AssetStatus>()"></select>
+            <span asp-validation-for="Status" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6" id="assigneeWrapper">
+            <label asp-for="AssignedToUserId" class="form-label"></label>
+            <select asp-for="AssignedToUserId" class="form-select" asp-items="@Model.UserOptions">
+                <option value="">Nobody</option>
+            </select>
+            <div class="form-text">Only applies while the status is In use.</div>
+            <span asp-validation-for="AssignedToUserId" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Location" class="form-label"></label>
+            <input asp-for="Location" class="form-control" placeholder="HQ Level 3" />
+            <span asp-validation-for="Location" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="PurchaseDate" class="form-label"></label>
+            <input asp-for="PurchaseDate" class="form-control" type="date" />
+            <span asp-validation-for="PurchaseDate" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="WarrantyExpiry" class="form-label"></label>
+            <input asp-for="WarrantyExpiry" class="form-control" type="date" />
+            <span asp-validation-for="WarrantyExpiry" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="PurchaseCost" class="form-label"></label>
+            <div class="input-group">
+                <span class="input-group-text">RM</span>
+                <input asp-for="PurchaseCost" class="form-control" type="number" step="0.01" min="0" />
+            </div>
+            <span asp-validation-for="PurchaseCost" class="text-danger small"></span>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg me-1"></i> @(Model.IsEdit ? "Save changes" : "Create asset")
+        </button>
+        <a class="btn btn-outline-secondary"
+           asp-action="@(Model.IsEdit ? "Details" : "Index")"
+           asp-route-id="@(Model.IsEdit ? Model.Id : (int?)null)">Cancel</a>
+    </div>
+</form>

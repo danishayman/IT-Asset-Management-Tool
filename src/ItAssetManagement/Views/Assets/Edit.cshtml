@@ -1,0 +1,23 @@
+@model AssetFormViewModel
+@{
+    ViewData["Title"] = $"Edit {Model.AssetTag}";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a asp-action="Index">Assets</a></li>
+        <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.AssetTag</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit</li>
+    </ol>
+</nav>
+
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <h1 class="h5 mb-4">Edit @Model.AssetTag</h1>
+        <partial name="_Form" model="Model" />
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_FormScripts" />
+}

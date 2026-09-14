@@ -1,0 +1,19 @@
+<partial name="_ValidationScriptsPartial" />
+<script>
+    // Purely a hint. The assignee is cleared server-side for any status other than In use,
+    // so this only saves the user from filling in a field that would be ignored anyway.
+    (function () {
+        var status = document.getElementById('statusSelect');
+        var wrapper = document.getElementById('assigneeWrapper');
+        if (!status || !wrapper) return;
+
+        function sync() {
+            var inUse = status.value === 'InUse';
+            wrapper.style.opacity = inUse ? '1' : '0.55';
+            wrapper.querySelector('select').disabled = !inUse;
+        }
+
+        status.addEventListener('change', sync);
+        sync();
+    })();
+</script>

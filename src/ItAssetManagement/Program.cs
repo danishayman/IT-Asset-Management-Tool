@@ -28,6 +28,8 @@ try
 
     builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
     builder.Services.AddScoped<IAuthService, AuthService>();
+    builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
+    builder.Services.AddScoped<IAssetService, AssetService>();
 
     builder.Services
         .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

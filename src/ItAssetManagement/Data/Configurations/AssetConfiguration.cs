@@ -30,7 +30,13 @@ public class AssetConfiguration : IEntityTypeConfiguration<Asset>
         builder.Property(a => a.PurchaseDate).IsRequired();
         builder.Property(a => a.WarrantyExpiry).IsRequired();
         builder.Property(a => a.CreatedAt).IsRequired();
-        builder.Property(a => a.UpdatedAt).IsRequired();
+        // UpdatedAt doubles as the optimistic concurrency token. Every update already
+        // rewrites it, so it uniquely identifies a row's revision without adding a column.
+        // EF puts its original value in the UPDATE's WHERE clause, so if someone else saved
+        // first the statement matches no rows and the second save is refused rather than
+        // silently overwriting their work. Postgres's xmin would be the textbook choice, but
+        // EF Core 10 insists on emitting DDL to create a column of that reserved name.
+        builder.Property(a => a.UpdatedAt).IsRequired().IsConcurrencyToken();
 
         // Restrict: a category that still has assets on it must be emptied first,
         // rather than silently taking its assets down with it.

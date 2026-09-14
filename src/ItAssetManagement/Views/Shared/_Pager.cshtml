@@ -1,0 +1,50 @@
+@model PagerViewModel
+
+@functions {
+    // Merges the current filter into each link so paging never silently resets it.
+    Dictionary<string, string?> LinkValues(int target) =>
+        new(Model.RouteValues) { ["Page"] = target.ToString() };
+}
+
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Pages" class="mt-3">
+        <ul class="pagination pagination-sm justify-content-center mb-0">
+            <li class="page-item @(Model.Page > 1 ? "" : "disabled")">
+                <a class="page-link" asp-all-route-data="LinkValues(Model.Page - 1)" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            @if (Model.ShowsFirst)
+            {
+                <li class="page-item"><a class="page-link" asp-all-route-data="LinkValues(1)">1</a></li>
+                <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+            }
+
+            @* Named pageNumber rather than page: a bare `@page` is parsed as the Razor
+               page directive and breaks the build. *@
+            @foreach (var pageNumber in Model.VisiblePages)
+            {
+                <li class="page-item @(pageNumber == Model.Page ? "active" : "")">
+                    <a class="page-link" asp-all-route-data="LinkValues(pageNumber)"
+                       aria-current="@(pageNumber == Model.Page ? "page" : null)">@pageNumber</a>
+                </li>
+            }
+
+            @if (Model.ShowsLast)
+            {
+                <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                <li class="page-item">
+                    <a class="page-link" asp-all-route-data="LinkValues(Model.TotalPages)">@Model.TotalPages</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.Page < Model.TotalPages ? "" : "disabled")">
+                <a class="page-link" asp-all-route-data="LinkValues(Model.Page + 1)" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+}
